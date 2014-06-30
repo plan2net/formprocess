@@ -14,10 +14,8 @@ This Extensions adds functionality to the TYPO3 form system extension. It adds a
 The PostProcessor will call your User Function with two parameters, the first holds the submitted form data, the second is a reference to itself.
 The User Function must accept these two arguments, for example:
 
-...
-
+```sh
 public function myUserFunction($formArray, &$pObj) {
   ... custom code
 }
-
-...
+```
