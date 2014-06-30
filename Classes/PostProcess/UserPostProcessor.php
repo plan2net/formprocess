@@ -94,15 +94,47 @@ class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInte
 	
 	protected function getFormArray($elements, &$resultArr) {
 		foreach($elements as $element) {
-			if ($element instanceof \TYPO3\CMS\Form\Domain\Model\Element\ContainerElement) {
+			/* Select Element */
+			if ($element instanceof \TYPO3\CMS\Form\Domain\Model\Element\SelectElement) {
+				$key = $element->getAttributeValue('name');
+				$label = ($element->getAdditionalObjectByKey('label')) ? $element->getAdditionalValue('label') : '';
+				$values = array();
+				foreach ($element->getElements() as $option) {
+					if (array_key_exists('selected', $option->getAllowedAttributes()) && $option->hasAttribute('selected')) {
+						$values[] = $option->getData();
+					}
+				}
+				$resultArr[$key] = array('label' => $label, 'value' => $values);
+			/* Checkbox Group Element */
+			} else if ($element instanceof \TYPO3\CMS\Form\Domain\Model\Element\CheckboxGroupElement) {
+				$key = '';
+				$legend = ($element->getAdditionalObjectByKey('legend')) ? $element->getAdditionalValue('legend') : '';
+				$values = array();
+				foreach ($element->getElements() as $checkbox) {
+					$key = $checkbox->getAttributeValue('name');
+					$label = ($checkbox->getAdditionalObjectByKey('label')) ? $checkbox->getAdditionalValue('label') : '';
+					$value = FALSE;
+					if (array_key_exists('checked', $checkbox->getAllowedAttributes()) && $checkbox->hasAttribute('checked'))
+						$value = TRUE;
+					$values[] = array('label' => $label, 'value' => $value);
+				}
+				$resultArr[$key] = array('label' => $legend, 'value' => $values);
+			/* Container Element */
+			} else if ($element instanceof \TYPO3\CMS\Form\Domain\Model\Element\ContainerElement) {
 				$this->getFormArray($element->getElements(), $resultArr);
 			} else {
 				$key = $element->getAttributeValue('name');
 				$label = ($element->getAdditionalObjectByKey('label')) ? $element->getAdditionalValue('label') : '';
-				if($element instanceof \TYPO3\CMS\Form\Domain\Model\Element\TextareaElement)
+				if($element instanceof \TYPO3\CMS\Form\Domain\Model\Element\TextareaElement) {
 					$value = $element->getData();
-				else
+				} else if ($element instanceof \TYPO3\CMS\Form\Domain\Model\Element\CheckboxElement) {
+					$value = FALSE;
+					if (array_key_exists('checked', $element->getAllowedAttributes()) && $element->hasAttribute('checked'))
+						$value = TRUE;
+				} else {
 					$value = ($element->hasAttribute('value')) ? $element->getAttributeValue('value') : '';
+				}
+				
 				$resultArr[$key] = array('label' => $label, 'value' => $value);
 			}
 		}
