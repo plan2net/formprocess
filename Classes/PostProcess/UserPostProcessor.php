@@ -4,7 +4,7 @@ namespace TYPO3\CMS\Form\PostProcess;
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2013 Stefan Neufeind <info@speedpartner.de>
+ *  (c) 2014 Ben Walch <ben.walch@world-direct.at>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -24,7 +24,7 @@ namespace TYPO3\CMS\Form\PostProcess;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 /**
- * The redirect post processor
+ * The user post processor
  */
 class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInterface {
 
