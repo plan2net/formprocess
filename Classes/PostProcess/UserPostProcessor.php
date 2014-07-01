@@ -76,7 +76,7 @@ class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInte
 	}
 
 	/**
-	 * Sets the redirect destination
+	 * Sets the user function
 	 *
 	 * @return void
 	 */
