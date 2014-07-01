@@ -15,7 +15,7 @@ The PostProcessor will call your User Function with two parameters, the first ho
 The User Function must accept these two arguments, for example:
 
 ```sh
-public function myUserFunction($formArray, &$pObj) {
-  ... custom code
+public function myUserFunction($formData, &$pObj) {
+  ... custom processing of form data
 }
 ```

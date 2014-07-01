@@ -85,28 +85,27 @@ class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInte
 		if ($this->typoScript['userFunction']) {
 			$this->userFunction = $this->typoScript['userFunction'];
 						
-			$formArray = array();
-			$this->getFormArray($this->form->getElements(), $formArray);
+			$formData = array();
+			$this->getFormData($this->form->getElements(), $formData);
 						
-			\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($this->userFunction, $formArray, $this);
+			\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($this->userFunction, $formData, $this);
 		}
 	}
 	
-	protected function getFormArray($elements, &$resultArr) {
+	protected function getFormData($elements, &$resultArr) {
 		foreach($elements as $element) {
 			$elementType = \TYPO3\CMS\Form\Utility\FormUtility::getLastPartOfClassName($element, TRUE);
 			$name = '';
 			$label = '';
 			$value = NULL;
-			$addFields = TRUE;
+			$addField = TRUE;
 			switch($elementType) {
 				case 'select':
 					$name = $element->getAttributeValue('name');
 					$label = ($element->getAdditionalObjectByKey('label')) ? $element->getAdditionalValue('label') : '';
-					$this->getFormArray($element->getElements(), $value);
+					$this->getFormData($element->getElements(), $value);
 					break;
 				case 'option':
-					//$name = $element->getAttributeValue('name');
 					$label = $element->getData();
 					$value = FALSE;
 					if (array_key_exists('selected', $element->getAllowedAttributes()) && $element->hasAttribute('selected'))
@@ -124,17 +123,20 @@ class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInte
 				case 'checkboxgroup':
 					$name = array_shift($element->getElements())->getAttributeValue('name');
 					$label = ($element->getAdditionalObjectByKey('legend')) ? $element->getAdditionalValue('legend') : '';
-					$this->getFormArray($element->getElements(), $value);
+					$this->getFormData($element->getElements(), $value);
 					break;
 				case 'container':
 				case 'grid':
-					$this->getFormArray($element->getElements(), $resultArr);
-					$addFields = FALSE;
+					$this->getFormData($element->getElements(), $resultArr);
+					$addField = FALSE;
 					break;
 				case 'textarea':
 					$name = $element->getAttributeValue('name');
 					$label = ($element->getAdditionalObjectByKey('label')) ? $element->getAdditionalValue('label') : '';
 					$value = $element->getData();
+					break;
+				case 'submit':
+					$addField = FALSE;
 					break;
 				default:
 					$name = $element->getAttributeValue('name');
@@ -142,7 +144,7 @@ class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInte
 					$value = ($element->hasAttribute('value')) ? $element->getAttributeValue('value') : '';
 					break;
 			}
-			if($addFields)
+			if($addField)
 				$resultArr[] = array('type' => $elementType, 'name' => $name, 'label' => $label, 'value' => $value);
 		}
 	}
