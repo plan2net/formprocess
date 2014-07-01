@@ -94,49 +94,56 @@ class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInte
 	
 	protected function getFormArray($elements, &$resultArr) {
 		foreach($elements as $element) {
-			/* Select Element */
-			if ($element instanceof \TYPO3\CMS\Form\Domain\Model\Element\SelectElement) {
-				$key = $element->getAttributeValue('name');
-				$label = ($element->getAdditionalObjectByKey('label')) ? $element->getAdditionalValue('label') : '';
-				$values = array();
-				foreach ($element->getElements() as $option) {
-					if (array_key_exists('selected', $option->getAllowedAttributes()) && $option->hasAttribute('selected')) {
-						$values[] = $option->getData();
-					}
-				}
-				$resultArr[$key] = array('label' => $label, 'value' => $values);
-			/* Checkbox Group Element */
-			} else if ($element instanceof \TYPO3\CMS\Form\Domain\Model\Element\CheckboxGroupElement) {
-				$key = '';
-				$legend = ($element->getAdditionalObjectByKey('legend')) ? $element->getAdditionalValue('legend') : '';
-				$values = array();
-				foreach ($element->getElements() as $checkbox) {
-					$key = $checkbox->getAttributeValue('name');
-					$label = ($checkbox->getAdditionalObjectByKey('label')) ? $checkbox->getAdditionalValue('label') : '';
+			$elementType = \TYPO3\CMS\Form\Utility\FormUtility::getLastPartOfClassName($element, TRUE);
+			$name = '';
+			$label = '';
+			$value = NULL;
+			$addFields = TRUE;
+			switch($elementType) {
+				case 'select':
+					$name = $element->getAttributeValue('name');
+					$label = ($element->getAdditionalObjectByKey('label')) ? $element->getAdditionalValue('label') : '';
+					$this->getFormArray($element->getElements(), $value);
+					break;
+				case 'option':
+					//$name = $element->getAttributeValue('name');
+					$label = $element->getData();
 					$value = FALSE;
-					if (array_key_exists('checked', $checkbox->getAllowedAttributes()) && $checkbox->hasAttribute('checked'))
+					if (array_key_exists('selected', $element->getAllowedAttributes()) && $element->hasAttribute('selected'))
 						$value = TRUE;
-					$values[] = array('label' => $label, 'value' => $value);
-				}
-				$resultArr[$key] = array('label' => $legend, 'value' => $values);
-			/* Container Element */
-			} else if ($element instanceof \TYPO3\CMS\Form\Domain\Model\Element\ContainerElement) {
-				$this->getFormArray($element->getElements(), $resultArr);
-			} else {
-				$key = $element->getAttributeValue('name');
-				$label = ($element->getAdditionalObjectByKey('label')) ? $element->getAdditionalValue('label') : '';
-				if($element instanceof \TYPO3\CMS\Form\Domain\Model\Element\TextareaElement) {
-					$value = $element->getData();
-				} else if ($element instanceof \TYPO3\CMS\Form\Domain\Model\Element\CheckboxElement) {
+					break;
+				case 'radio':
+				case 'checkbox':
+					$name = $element->getAttributeValue('name');
+					$label = ($element->getAdditionalObjectByKey('label')) ? $element->getAdditionalValue('label') : '';
 					$value = FALSE;
 					if (array_key_exists('checked', $element->getAllowedAttributes()) && $element->hasAttribute('checked'))
 						$value = TRUE;
-				} else {
+					break;
+				case 'radiogroup':
+				case 'checkboxgroup':
+					$name = array_shift($element->getElements())->getAttributeValue('name');
+					$label = ($element->getAdditionalObjectByKey('legend')) ? $element->getAdditionalValue('legend') : '';
+					$this->getFormArray($element->getElements(), $value);
+					break;
+				case 'container':
+				case 'grid':
+					$this->getFormArray($element->getElements(), $resultArr);
+					$addFields = FALSE;
+					break;
+				case 'textarea':
+					$name = $element->getAttributeValue('name');
+					$label = ($element->getAdditionalObjectByKey('label')) ? $element->getAdditionalValue('label') : '';
+					$value = $element->getData();
+					break;
+				default:
+					$name = $element->getAttributeValue('name');
+					$label = ($element->getAdditionalObjectByKey('label')) ? $element->getAdditionalValue('label') : '';
 					$value = ($element->hasAttribute('value')) ? $element->getAttributeValue('value') : '';
-				}
-				
-				$resultArr[$key] = array('label' => $label, 'value' => $value);
+					break;
 			}
+			if($addFields)
+				$resultArr[] = array('type' => $elementType, 'name' => $name, 'label' => $label, 'value' => $value);
 		}
 	}
 
