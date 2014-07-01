@@ -1,7 +1,7 @@
 <?php
 
 /***************************************************************
- * Extension Manager/Repository config file for ext "formgrids".
+ * Extension Manager/Repository config file for ext "formprocess".
  *
  * Auto generated 24-06-2014 13:39
  *
@@ -12,7 +12,7 @@
 
 $EM_CONF[$_EXTKEY] = array (
 	'title' => 'Form Process',
-	'description' => 'This extension adds functionality to the TYPO3 form system extension. It offers the opportunity to define a custom Post Processor. It also integrates itself into the TYPO3 Form Wizard.',
+	'description' => 'This extension offers the opportunity to define a custom Post Processor for the TYPO3 form system extension. It also completely integrates itself into the TYPO3 Form Wizard.',
 	'category' => 'misc',
 	'shy' => false,
 	'version' => '1.0.0',
@@ -21,7 +21,7 @@ $EM_CONF[$_EXTKEY] = array (
 	'priority' => '',
 	'loadOrder' => NULL,
 	'module' => '',
-	'state' => 'alpha',
+	'state' => 'beta',
 	'uploadfolder' => false,
 	'createDirs' => '',
 	'modify_tables' => '',
