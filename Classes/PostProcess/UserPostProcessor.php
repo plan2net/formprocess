@@ -135,6 +135,8 @@ class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInte
 					$label = ($element->getAdditionalObjectByKey('label')) ? $element->getAdditionalValue('label') : '';
 					$value = $element->getData();
 					break;
+				case 'header':
+					break;
 				case 'submit':
 					$addField = FALSE;
 					break;
