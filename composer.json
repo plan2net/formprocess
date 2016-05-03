@@ -1,0 +1,13 @@
+{
+  "name": "sitegeist/formprocess",
+  "type": "typo3-cms-extension",
+  "version": "1.0.0",
+  "description": "Define a custom Post Processor for the TYPO3 form system extension.",
+  "license": "GPL-2.0+",
+  "keywords": ["typo3", "TYPO3 CMS", "form", "post processor"],
+
+  "autoload": {
+    "psr-0": {
+    }
+  }
+}
