@@ -29,7 +29,7 @@ namespace TYPO3\CMS\Form\PostProcess;
 class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInterface {
 
 	/**
-	 * @var \TYPO3\CMS\Form\Domain\Model\Form
+	 * @var \TYPO3\CMS\Form\Domain\Model\Element
 	 */
 	protected $form;
 
@@ -38,10 +38,6 @@ class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInte
 	 */
 	protected $typoScript;
 
-	/**
-	 * @var \TYPO3\CMS\Form\Request
-	 */
-	protected $requestHandler;
 
 	/**
 	 * @var string
@@ -56,13 +52,12 @@ class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInte
 	/**
 	 * Constructor
 	 *
-	 * @param \TYPO3\CMS\Form\Domain\Model\Form $form Form domain model
+	 * @param \TYPO3\CMS\Form\Domain\Model\Element $form Form domain model
 	 * @param array $typoScript Post processor TypoScript settings
 	 */
-	public function __construct(\TYPO3\CMS\Form\Domain\Model\Form $form, array $typoScript) {
+	public function __construct(\TYPO3\CMS\Form\Domain\Model\Element $form, array $typoScript) {
 		$this->form = $form;
 		$this->typoScript = $typoScript;
-		$this->requestHandler = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Form\\Request');
 	}
 
 	/**
@@ -86,68 +81,93 @@ class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInte
 			$this->userFunction = $this->typoScript['userFunction'];
 						
 			$formData = array();
-			$this->getFormData($this->form->getElements(), $formData);
-						
+			$this->getFormData($this->form->getChildElements(), $formData);
+
 			\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($this->userFunction, $formData, $this);
 		}
 	}
 	
 	protected function getFormData($elements, &$resultArr) {
 		foreach($elements as $element) {
-			$elementType = \TYPO3\CMS\Form\Utility\FormUtility::getLastPartOfClassName($element, TRUE);
+			$elementType = strtolower(trim($element->getElementType()));
 			$name = '';
 			$label = '';
 			$value = NULL;
 			$addField = TRUE;
+
 			switch($elementType) {
+				case 'fileupload':
+					$name = $element->getAdditionalArgument('name');
+					$label = $element->getAdditionalArgument('label');
+					$value = $element->getAdditionalArgument('uploadedFiles')[0];
+					break;
+
+				case 'fieldset':
+					$name = $element->getName();
+					$label = $element->getAdditionalArgument('legend');
+					$this->getFormData($element->getChildElements(), $value);
+					break;
+
 				case 'select':
-					$name = $element->getAttributeValue('name');
-					$label = ($element->getAdditionalObjectByKey('label')) ? $element->getAdditionalValue('label') : '';
-					$this->getFormData($element->getElements(), $value);
+					$name = $element->getAdditionalArgument('name');
+					$label = $element->getAdditionalArgument('label');
+					$this->getFormData($element->getChildElements(), $value);
 					break;
+
 				case 'option':
-					$label = $element->getData();
-					$value = FALSE;
-					if (array_key_exists('selected', $element->getAllowedAttributes()) && $element->hasAttribute('selected'))
-						$value = TRUE;
+					$label = $element->getAdditionalArgument('label');
+					$value = (bool) !empty($element->getAdditionalArgument('selected'));
 					break;
+
 				case 'radio':
 				case 'checkbox':
-					$name = $element->getAttributeValue('name');
-					$label = ($element->getAdditionalObjectByKey('label')) ? $element->getAdditionalValue('label') : '';
-					$value = FALSE;
-					if (array_key_exists('checked', $element->getAllowedAttributes()) && $element->hasAttribute('checked'))
-						$value = TRUE;
+					$name = $element->getAdditionalArgument('name');
+					$label = $element->getAdditionalArgument('label');
+					$value = (bool) !empty($element->getAdditionalArgument('checked'));
 					break;
+
 				case 'radiogroup':
 				case 'checkboxgroup':
-					$name = array_shift($element->getElements())->getAttributeValue('name');
-					$label = ($element->getAdditionalObjectByKey('legend')) ? $element->getAdditionalValue('legend') : '';
-					$this->getFormData($element->getElements(), $value);
+					$name = $element->getName();
+					$label = $element->getAdditionalArgument('legend');
+					$this->getFormData($element->getChildElements(), $value);
 					break;
+
 				case 'container':
 				case 'grid':
-					$this->getFormData($element->getElements(), $resultArr);
+					$this->getFormData($element->getChildElements(), $resultArr);
 					$addField = FALSE;
 					break;
+
 				case 'textarea':
-					$name = $element->getAttributeValue('name');
-					$label = ($element->getAdditionalObjectByKey('label')) ? $element->getAdditionalValue('label') : '';
-					$value = $element->getData();
+					$name = $element->getAdditionalArgument('name');
+					$label = $element->getAdditionalArgument('label');
+					$value = $element->getAdditionalArgument('value');
 					break;
+
 				case 'header':
+				case 'textblock':
+				case 'reset':
 					break;
+
 				case 'submit':
 					$addField = FALSE;
 					break;
+
 				default:
-					$name = $element->getAttributeValue('name');
-					$label = ($element->getAdditionalObjectByKey('label')) ? $element->getAdditionalValue('label') : '';
-					$value = ($element->hasAttribute('value')) ? $element->getAttributeValue('value') : '';
+					$name = $element->getAdditionalArgument('name');
+					$label = $element->getAdditionalArgument('label');
+					$value = $element->getAdditionalArgument('value');
 					break;
 			}
+
 			if($addField)
-				$resultArr[] = array('type' => $elementType, 'name' => $name, 'label' => $label, 'value' => $value);
+				$resultArr[] = array(
+					'type' => $elementType,
+					'name' => $name,
+					'label' => $label,
+					'value' => $value
+				);
 		}
 	}
 
@@ -158,5 +178,15 @@ class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInte
 	 */
 	protected function render() {
 		return '';
+	}
+
+	/**
+	 * Set the current controller context
+	 *
+	 * @param \TYPO3\CMS\Form\Mvc\Controller\ControllerContext $controllerContext
+	 * @return void
+	 */
+	public function setControllerContext(\TYPO3\CMS\Form\Mvc\Controller\ControllerContext $controllerContext) {
+		$this->controllerContext = $controllerContext;
 	}
 }
