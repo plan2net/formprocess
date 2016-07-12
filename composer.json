@@ -10,7 +10,7 @@
       "WorldDirect\\Formprocess\\": "Classes/"
     },
     "classmap": [
-      "Classes/PostProcess/UserPostProcessor.php"
+      "Patches/UserPostProcessor.php"
     ]
   }
 }

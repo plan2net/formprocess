@@ -83,7 +83,7 @@ class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInte
 			$formData = array();
 			$this->getFormData($this->form->getChildElements(), $formData);
 
-			\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($this->userFunction, $formData, $this);
+			//\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($this->userFunction, $formData, $this);
 		}
 	}
 	
