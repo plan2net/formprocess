@@ -83,7 +83,7 @@ class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInte
 			$formData = array();
 			$this->getFormData($this->form->getChildElements(), $formData);
 
-			//\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($this->userFunction, $formData, $this);
+			\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($this->userFunction, $formData, $this);
 		}
 	}
 	
@@ -93,6 +93,7 @@ class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInte
 			$name = '';
 			$label = '';
 			$value = NULL;
+			$selected = NULL;
 			$addField = TRUE;
 
 			switch($elementType) {
@@ -116,14 +117,15 @@ class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInte
 
 				case 'option':
 					$label = $element->getAdditionalArgument('label');
-					$value = (bool) !empty($element->getAdditionalArgument('selected'));
+					$value = $element->getAdditionalArgument('text');
+					$selected = (bool)!empty($element->getAdditionalArgument('selected'));
 					break;
 
 				case 'radio':
 				case 'checkbox':
 					$name = $element->getAdditionalArgument('name');
 					$label = $element->getAdditionalArgument('label');
-					$value = (bool) !empty($element->getAdditionalArgument('checked'));
+					$value = (bool)!empty($element->getAdditionalArgument('checked'));
 					break;
 
 				case 'radiogroup':
@@ -166,7 +168,8 @@ class UserPostProcessor implements \TYPO3\CMS\Form\PostProcess\PostProcessorInte
 					'type' => $elementType,
 					'name' => $name,
 					'label' => $label,
-					'value' => $value
+					'value' => $value,
+					'selected' => $selected
 				);
 		}
 	}
