@@ -1,5 +1,5 @@
 <?php
-namespace TYPO3\CMS\Form\PostProcess;
+namespace WorldDirect\Formprocess\PostProcess;
 
 /***************************************************************
  *  Copyright notice
